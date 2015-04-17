@@ -67,10 +67,7 @@ class UpdateThread implements Runnable {
 		String destZip = product + DESTZIPFORMAT;
 		final char SPLASH = '"';
 		ftpDownUpdateZip(projectName, this.path);
-		//System.out.println("nihaoma");
-		//System.exit(1);
-		//String datePrefix = formatDateInfo("", "YYYY/MM/dd");
-		File dir = new File(this.path);		
+		File dir = new File(this.path);
 		File[] files = dir.listFiles();
 		for (File f : files) {
 			String filename = f.getName();
@@ -82,7 +79,7 @@ class UpdateThread implements Runnable {
 				}
 				String projectVer = readInZip(srcZip, UPDATERSCRIPT);
 				if (projectVer.contains(HARDWAREFLAG) && projectVer.contains("==")) {
-					projectVer = projectVer.substring(projectVer.indexOf("==") + 2);
+					projectVer = projectVer.substring(projectVer.indexOf("==") + "==".length());
 					projectVer = projectVer.substring(projectVer.indexOf(SPLASH) + 1, projectVer.lastIndexOf(SPLASH));
 				}
 				if (hardwareVer.equalsIgnoreCase(projectVer)) {
@@ -109,27 +106,27 @@ class UpdateThread implements Runnable {
 	}
 	private void ftpDownUpdateZip(String project, String localdir) {
 		String ftpfilepath = "/images/" + project + "/DailyTest/";
-		String localupdatetxt = project + UPDATETXT;
+		String todayInfo = formatDateInfo("A", "MM.dd");
 		boolean result = false;
+
 		FtpApache ftp = new FtpApache();
-		result = ftp.downSpecifiedFile(ftpfilepath, UPDATETXT, localdir, localupdatetxt);
-		if(result) {
-			File updatetxt = new File(localdir + File.separator + localupdatetxt);
-			String updatepath = readFile(updatetxt);
-			if (!updatepath.trim().isEmpty()) {
-				int index = updatepath.indexOf("/images");
-				updatepath = updatepath.substring(index);
-				index = updatepath.lastIndexOf(FLAG);
-				ftpfilepath = updatepath.substring(0, index);
-				String ftpfilename = updatepath.substring(index + 1).replace("\n", "");
-				String todayInfo = formatDateInfo("A", "MM.dd");
-				if (ftpfilepath.contains(todayInfo)) {
-					ftp.downSpecifiedFile(ftpfilepath, ftpfilename, localdir, ftpfilename);
-				} else {
-					logger.warning("\n****Find No Update Zip for " + project + " today!****\n");
+		ftp.connectServer(FtpApache.SERVER_IP, FtpApache.SERVER_PORT, FtpApache.USERNAME, FtpApache.PASSWORD, "/images");
+		ftpfilepath = ftp.getRemoteFile(project + "/DailyTest/", todayInfo);
+		if (ftpfilepath.isEmpty()) {
+			logger.warning("\n****Find No Update Zip for " + ftpfilepath + " today!****\n");
+		} else {
+			ftpfilepath = ftp.getRemoteFile(ftpfilepath, SRCZIPFORMAT);
+			if (!ftpfilepath.isEmpty()) {
+				String localpath = project + SRCZIPFORMAT;
+				result = ftp.download(ftpfilepath, localpath);
+				if (!result) {
+					logger.warning("\n****Download Update Zip for " + project + " failed!****\n");
 				}
+			} else {
+				logger.warning("\n****Find No Update Zip for " + project + " today!****\n");
 			}
 		}
+		ftp.closeConnect();
 	}
 
 	private String formatDateInfo(String prefix, String format) {

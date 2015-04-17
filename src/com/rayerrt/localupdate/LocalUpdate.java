@@ -114,7 +114,7 @@ public class LocalUpdate {
 		File[] files = dir.listFiles();
 		for (File f : files) {
 			try {
-				if (f.getName().endsWith(UpdateThread.UPDATETXT) || f.getName().endsWith(UpdateThread.SRCZIPFORMAT)) {
+				if (f.getName().endsWith(UpdateThread.SRCZIPFORMAT)) {
 					f.delete();
 				}
 			} catch (Exception e) {
