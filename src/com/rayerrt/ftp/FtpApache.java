@@ -1,16 +1,13 @@
 package com.rayerrt.ftp;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.logging.Logger;
 
 import sun.net.TelnetInputStream;
 import sun.net.TelnetOutputStream;
 import sun.net.ftp.FtpClient;
 
-import javax.xml.crypto.Data;
 import java.util.List;
 /**
  * Java1.6自带的API对FTP的操作
@@ -77,7 +74,7 @@ public class FtpApache {
             ftpClient.login(user, password);
             // 设置成2进制传输
             ftpClient.binary();
-            System.out.println("login success!");
+            //System.out.println("login success!");
             if (path.length() != 0){
                 //把远程系统上的目录切换到参数path所指定的目录
                 ftpClient.cd(path);
@@ -97,9 +94,9 @@ public class FtpApache {
     public void closeConnect() {
         try {
             ftpClient.closeServer();
-            System.out.println("disconnect success");
+            //System.out.println("disconnect success");
         } catch (IOException ex) {
-            System.out.println("not disconnect");
+            //System.out.println("not disconnect");
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }

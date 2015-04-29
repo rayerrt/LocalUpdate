@@ -52,12 +52,30 @@ class UpdateThread implements Runnable {
 		
 	private String device;
 	private String path;
+	private String testdir;
+	private String version;
 
 	public UpdateThread(String d, String path) {
 		this.device = d;
 		this.path = path;
 	}
-	
+
+	public UpdateThread(String d, String path, String testdir, String version) {
+		this.device = d;
+		this.path = path;
+		if (testdir != null && !testdir.isEmpty()) {
+			this.testdir = testdir;
+		} else {
+			this.testdir = "DailyTest";
+		}
+
+		if (null != version && !version.isEmpty()) {
+			this.version = version;
+		} else {
+			this.version = formatDateInfo("A", "MM.dd");
+		}
+	}
+
 	@Override
 	public void run() {
 		/* TODO Auto-generated method stub */
@@ -105,13 +123,10 @@ class UpdateThread implements Runnable {
 		}
 	}
 	private void ftpDownUpdateZip(String project, String localdir) {
-		String ftpfilepath = "/images/" + project + "/DailyTest/";
-		String todayInfo = formatDateInfo("A", "MM.dd");
 		boolean result = false;
-
 		FtpApache ftp = new FtpApache();
 		ftp.connectServer(FtpApache.SERVER_IP, FtpApache.SERVER_PORT, FtpApache.USERNAME, FtpApache.PASSWORD, "/images");
-		ftpfilepath = ftp.getRemoteFile(project + "/DailyTest/", todayInfo);
+		String ftpfilepath = ftp.getRemoteFile(project + "/" + this.testdir, this.version);
 		if (ftpfilepath.isEmpty()) {
 			logger.warning("\n****Find No Update Zip for " + ftpfilepath + " today!****\n");
 		} else {

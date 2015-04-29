@@ -6,9 +6,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.logging.Logger;
+
+import org.apache.commons.cli.*;
+
 
 /**
  *
@@ -20,23 +22,47 @@ public class LocalUpdate {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 
 		String dailybuild = System.getProperty("user.dir");
+		String testdir = "";
+		String version = "";
+
+		CommandLineParser parser = new BasicParser();
+		Options options = new Options();
+		options.addOption("t", "type", true, "指定测试文件夹");
+		options.addOption("v", "version", true, "指定版本号");
+    	options.addOption("h", "help", false, "显示帮助信息");
+		try {
+			final CommandLine commandline = parser.parse(options, args);
+			if (commandline.hasOption("-t")) {
+				testdir = commandline.getOptionValue("t");
+			}
+			if (commandline.hasOption("-v")) {
+				version = commandline.getOptionValue("v");
+			}
+			if (commandline.hasOption("h")) {
+				logger.info("java -jar LocalUpdate.jar [-t SystemTest] [-v 1.11.6]");
+				System.exit(0);
+			}
+		} catch (MissingArgumentException e) {
+			e.printStackTrace();
+		}
 		deleteOldFiles(dailybuild);
 		
 		List<String> devicesList;
 		devicesList = getAdbDevices();
 		if (devicesList.size() != 0) {
 			for (String d : devicesList) {
-				UpdateThread r = new UpdateThread(d, dailybuild);
+				UpdateThread r = new UpdateThread(d, dailybuild, testdir, version);
 				new Thread(r, d).start();
 			}
 		} else {
 			logger.warning("没有获取到正在连接的adb设备");
 		}
 	}
+
 	/**
 	 * if necessary, restart adb-server
 	 */
@@ -66,6 +92,7 @@ public class LocalUpdate {
 		}
 	return isRunning;
 	}
+
 	/**
 	for get devices connected now
 	@return
